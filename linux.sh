@@ -18,7 +18,7 @@ git config --list | more
 
 if [ $? -eq 0 ];then
 	echo -e "\033[31m Success,enjoy !~~\033[0m"
-	echo -e "\033[31m Just need input Account at first,just first time !!! Never need passwd! \033[0m"
+	echo -e "\033[31m Just need input Account&Passwd at first,just first time!!! \033[0m"
 else
 	echo -e "\033[31m Something wrong,check by yourself ~_~ \033[0m"
 	exit 1

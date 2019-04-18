@@ -5,7 +5,26 @@ if ! which git &> /dev/null ;then
 	exit 1
 fi
 
-echo -e "\033[31m GiHub Account & Passwd input \033[0m"
+# -----------------------------------------------------------------------------
+
+
+
+echo -e "\033[31m GitConfig Email & UserName input \033[0m"
+git config -l | grep 'user.email' 
+if [ $? -ne 0 ];then
+	read -p "GitConfig Email:" Email
+	git config --global user.email ${Email}
+fi
+git config -l | grep 'user.name' 
+if [ $? -ne 0 ];then
+	read -p "GitConfig UserName:" USERNAME 
+	git config --global user.name ${USERNAME}
+fi
+echo -e "\033[31m GitConfig Finished !\033[0m"
+
+# -----------------------------------------------------------------------------
+
+echo -e "\033[31m GiHub Passwd input \033[0m"
 read -p "GitHub Account:" ACCOUNT
 read -p "GitHub Passwd:" PASSWD 
 

@@ -5,6 +5,7 @@
    - [git技巧](#git技巧)   
    - [检索某人(某邮件)提交记录](#检索某人某邮件提交记录)   
    - [统计某公司所有提交记录](#统计某公司所有提交记录)   
+   - [修改git时间戳显示](#修改git时间戳显示)   
 
 <!-- /MDTOC -->
 
@@ -285,10 +286,15 @@ git log --format=%ae | cut -d'@' -f2 | sort | uniq -c | sort -n -r
 
 
 
+## 修改git时间戳显示
 
+全局配置，时间为本机时间，确保本机时间为CST则为北京时间
 
+```
+git config --global log.date format-local:'%Y-%m-%d %H:%M:%S(Beijing)' --replace-all
+```
 
-
+![image](https://user-images.githubusercontent.com/19882390/176350986-498388c7-a027-4d4e-9366-4f20622d77e1.png)
 
 
 

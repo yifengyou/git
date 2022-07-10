@@ -1,4 +1,3 @@
-
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [git](#git)   
@@ -6,9 +5,9 @@
    - [检索某人(某邮件)提交记录](#检索某人某邮件提交记录)   
    - [统计某公司所有提交记录](#统计某公司所有提交记录)   
    - [修改git时间戳显示](#修改git时间戳显示)   
+   - [github/gitee免密登陆](#githubgitee免密登陆)   
 
 <!-- /MDTOC -->
-
 # git
 
 ```
@@ -295,6 +294,74 @@ git config --global log.date format-local:'%Y-%m-%d %H:%M:%S(Beijing)' --replace
 ```
 
 ![image](https://user-images.githubusercontent.com/19882390/176350986-498388c7-a027-4d4e-9366-4f20622d77e1.png)
+
+
+## github/gitee免密登陆
+
+* 经验总结，使用https/http访问github极不稳定（国内环境）相比而言
+* 墙裂推荐使用 ssh 方式
+
+
+如何将现有仓库的上游调整，命令也行，但是我更喜欢上去直接改配置文件
+
+![20220710_094225_99](image/20220710_094225_99.png)
+
+将url字段内容调整为git，格式为
+
+```
+git@XXXX:/NAMESPACE/REPOSITORY_NAME
+```
+
+![20220710_094453_34](image/20220710_094453_34.png)
+
+这里需要分一下，公钥私钥，不管你熟悉不熟悉，
+
+* 公钥就是公开的，as we know, all is well
+* 私钥肯定不公开撒，你的小秘密只有你自己知道
+
+github/gitee端授信的肯定是公钥，然后你用你的"小秘密"访问
+
+如果github/gitee端授信的是私钥，那么你的小秘密，任何人用"all is well"都能解开，那还安全个毛毛？
+
+因此，需要针对github/gitee/gitlab分别生成一套公私钥。当然，你要是够懒，用同一套，没人拦着。不过，这东西毕竟免密，只需要刚开始配置一套即可，代价较小（程序员偷懒思维）。
+
+首先，公钥甩哪里去？
+
+![20220710_100709_92](image/20220710_100709_92.png)
+
+![20220710_100723_13](image/20220710_100723_13.png)
+
+
+![20220710_100626_43](image/20220710_100626_43.png)
+
+
+
+然后，私钥甩哪里去？
+
+* 修改```~/.ssh/config```，添加条目，指定IdentityFile到路径
+* 有能基于当前repo的id file配置？有也暂时不用，因为，懒
+
+```
+$ cat ~/.ssh/config
+
+Host gitee.com
+  HostName gitee.com
+  IdentityFile ~/.ssh/gitee_yifengyou
+
+Host github.com
+  HostName github.com
+  IdentityFile ~/.ssh/github_yifengyou
+```
+
+![20220710_101121_23](image/20220710_101121_23.png)
+
+
+
+
+
+
+
+
 
 
 

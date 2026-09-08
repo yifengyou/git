@@ -1,0 +1,127 @@
+name: khadas android 12
+
+on:
+  push:
+    branches:
+      - master
+  repository_dispatch:
+  workflow_dispatch:
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  khadas-android12:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        id: basic_info
+        run: |
+          set -xe
+          nproc
+          uname -a
+          cat /etc/*release
+          free -h
+          mount
+          df -h
+          lsblk
+          blkid
+          cat /proc/cpuinfo
+          cat /proc/meminfo
+
+      - name: Initialize the build environment
+        id: init
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          set -x
+          sudo rm -rf ~/{.cargo,.dotnet,.rustup}
+          docker rmi -f $(docker images -q) 2>/dev/null || true
+          [[ -n "${AGENT_TOOLSDIRECTORY}" ]] && sudo rm -rf "${AGENT_TOOLSDIRECTORY}"
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android 2>/dev/null
+          sudo swapoff -a
+          sudo rm -f /swapfile /mnt/swapfile
+          sudo apt update
+          sudo apt install -y ubuntu-minimal
+          sudo apt-mark auto $(apt-mark showmanual | grep -v '^ubuntu-minimal$')
+          sudo apt-get purge -y build-essential
+          sudo apt autoremove --purge -y
+          sudo apt-get install -qq -y git gnupg \
+            curl sudo rar
+          sudo apt clean
+          dpkg -l
+
+      - name: Create virtual disk for extended storage
+        id: disk
+        run: |
+          sudo mkdir -p /builder
+          sudo chown -R runner:runner /builder
+          lsblk
+          df -Th
+          git config --global user.name yifengyou
+          git config --global user.email 842056007@qq.com
+          exit 1
+
+      - name: Clone target repository
+        working-directory: /builder
+        id: clone
+        run: |
+          set -xe
+          mkdir -p android12
+          cd android12
+          curl https://storage.googleapis.com/git-repo-downloads/repo > repo
+          chmod a+x repo
+          ls -alh repo
+          ./repo init -u https://github.com/khadas/android_manifest.git -b khadas-edge2-android12
+          ls -alh
+          MAX_RETRIES=30
+          RETRY_COUNT=0
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            .repo/repo/repo sync -v -c -j8 -n --no-tags --no-clone-bundle | tee -a /builder/khadas-android12.log
+            if [ $? -eq 0 ];then
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              ls -alh
+              df -h
+            fi
+          done
+
+      - name: Create archive with split
+        working-directory: /builder
+        id: archive
+        run: |
+          set -xe
+          ls -alh ./*
+          df -h
+          rar a -v1g khadas-android12.rar android12
+          ls -alh /builder/*
+          ls -alh ./*
+          df -h
+
+      - name: List created files
+        working-directory: /builder
+        run: |
+          echo "Created archive files:"
+          df -h
+          ls -alh ./*
+
+      - name: Upload Kernel to Release
+        uses: ncipollo/release-action@main
+        with:
+          tag: khadas-android12
+          artifacts: /builder/khadas-android*
+          allowUpdates: true
+          removeArtifacts: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: | # khadas android12源码镜像
+
+            ## 免责声明
+            - **按原样提供**：镜像不作任何保证，使用风险自负
+            - **无官方关联**：主板厂家和瑞星微无任何关联、无任何商业关联
+            - **安全提示**：请及时更新补丁、修改默认密码、配置防火墙
